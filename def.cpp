@@ -186,45 +186,45 @@ HRESULT OpenURL(const string& szURL)
    return (hres);
 }
 
-char* replace(const char* const original, const char* const pattern, const char* const replacement)
+char *replace(const char *const original, const char *const pattern, const char *const replacement)
 {
-  const size_t replen = strlen(replacement);
-  const size_t patlen = strlen(pattern);
-  const size_t orilen = strlen(original);
+   const size_t replen = strlen(replacement);
+   const size_t patlen = strlen(pattern);
+   const size_t orilen = strlen(original);
 
-  size_t patcnt = 0;
-  const char * patloc;
+   size_t patcnt = 0;
+   const char *patloc;
 
-  // find how many times the pattern occurs in the original string
-  for (const char* oriptr = original; (patloc = strstr(oriptr, pattern)); oriptr = patloc + patlen)
-    patcnt++;
+   // find how many times the pattern occurs in the original string
+   for (const char *oriptr = original; (patloc = strstr(oriptr, pattern)); oriptr = patloc + patlen)
+      patcnt++;
 
-  {
-    // allocate memory for the new string
-    const size_t retlen = orilen + patcnt * (replen - patlen);
-    char * const returned = new char[retlen + 1];
+   {
+      // allocate memory for the new string
+      const size_t retlen = orilen + patcnt * (replen - patlen);
+      char *const returned = new char[retlen + 1];
 
-    //if (returned != nullptr)
-    {
-      // copy the original string, 
-      // replacing all the instances of the pattern
-      char * retptr = returned;
-      const char* oriptr;
-      for (oriptr = original; (patloc = strstr(oriptr, pattern)); oriptr = patloc + patlen)
+      //if (returned != nullptr)
       {
-        const size_t skplen = patloc - oriptr;
-        // copy the section until the occurence of the pattern
-        strncpy(retptr, oriptr, skplen);
-        retptr += skplen;
-        // copy the replacement 
-        strncpy(retptr, replacement, replen);
-        retptr += replen;
+         // copy the original string,
+         // replacing all the instances of the pattern
+         char *retptr = returned;
+         const char *oriptr;
+         for (oriptr = original; (patloc = strstr(oriptr, pattern)); oriptr = patloc + patlen)
+         {
+            const size_t skplen = patloc - oriptr;
+            // copy the section until the occurence of the pattern
+            strncpy_s(retptr, retlen + 1, oriptr, skplen);
+            retptr += skplen;
+            // copy the replacement
+            strncpy_s(retptr, retlen + 1 - skplen, replacement, replen);
+            retptr += replen;
+         }
+         // copy the rest of the string.
+         strcpy_s(retptr, retlen + 1 - (oriptr - original), oriptr);
       }
-      // copy the rest of the string.
-      strcpy(retptr, oriptr);
-    }
-    return returned;
-  }
+      return returned;
+   }
 }
 
 // Helper function for IsOnWine

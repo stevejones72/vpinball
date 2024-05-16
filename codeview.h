@@ -77,10 +77,10 @@ public:
    ~CodeViewDispatch() {}
 
    wstring m_wName;
-   IUnknown *m_punk;
-   IDispatch *m_pdisp;
+   IUnknown *m_punk = nullptr;
+   IDispatch *m_pdisp = nullptr;
    IScriptable *m_piscript;
-   bool m_global;
+   bool m_global = false;
 
    // for VectorSortString
    int SortAgainst(const CodeViewDispatch * const pcvd/*void *pvoid*/) const { return SortAgainstValue(pcvd->m_wName); }

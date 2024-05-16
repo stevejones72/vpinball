@@ -10,6 +10,7 @@
 #include <dbghelp.h>
 #include <cassert>
 #include "vpversion.h"
+#include <VersionHelpers.h>
 
 namespace
 {
@@ -32,75 +33,40 @@ namespace
    typedef HRESULT(STDAPICALLTYPE *pRGV)(LPOSVERSIONINFOEXW osi);
    static pRGV mRtlGetVersion = nullptr;
 
+
    void WriteSystemInfo(FILE* f)
    {
-      if (mRtlGetVersion == nullptr)
-         mRtlGetVersion = (pRGV)GetProcAddress(GetModuleHandle(TEXT("ntdll")), "RtlGetVersion"); // apparently the only really reliable solution to get the OS version (as of Win10 1803)
-
-      DWORD major, minor, build;
-      BYTE product;
-      if (mRtlGetVersion != nullptr) // Windows 10 1803 and above
-      {
-         OSVERSIONINFOEXW osInfo;
-         osInfo.dwOSVersionInfoSize = sizeof(osInfo);
-         mRtlGetVersion(&osInfo);
-
-         major = osInfo.dwMajorVersion;
-         minor = osInfo.dwMinorVersion;
-         build = osInfo.dwBuildNumber;
-         product = osInfo.wProductType;
-      }
-      else
-      {
-         OSVERSIONINFOEX sysInfo = {};
-         sysInfo.dwOSVersionInfoSize = sizeof(sysInfo);
-         ::GetVersionEx((OSVERSIONINFO*)&sysInfo);
-
-         major = sysInfo.dwMajorVersion;
-         minor = sysInfo.dwMinorVersion;
-         build = sysInfo.dwBuildNumber;
-         product = sysInfo.wProductType;
-      }
-
-      // We're mainly interested in rough info and latest systems
       fprintf(f, "System: ");
-      if (major == 10)
+      if (IsWindows10OrGreater())
       {
-         fprintf(f, "Windows 10 (%lu.%lu %lu%s)\n", major, minor, build, VER_NT_WORKSTATION ? "" : " Server");
+         fprintf(f, "Windows 10 or greater\n");
       }
-      else if (major == 6 && minor == 2)
+      else if (IsWindows8Point1OrGreater())
       {
-         if (product != VER_NT_WORKSTATION)
-            fprintf(f, "Windows Server 2012 (or above)\n"); //!! as otherwise the manifest should be adapted to target 8.1 or 10
-         else
-            fprintf(f, "Windows 8 (or above)\n"); //!! as otherwise the manifest should be adapted to target 8.1 or 10
+         fprintf(f, "Windows 8.1\n");
       }
-      else if (major == 6 && minor == 1)
+      else if (IsWindows8OrGreater())
       {
-         if (product != VER_NT_WORKSTATION)
-            fprintf(f, "Windows Server 2008 R2\n");
-         else
-            fprintf(f, "Windows 7\n");
+         fprintf(f, "Windows 8\n");
       }
-      else if (major == 6 && minor == 0)
+      else if (IsWindows7OrGreater())
       {
-         if (product != VER_NT_WORKSTATION)
-            fprintf(f, "Windows Server 2008\n");
-         else
-            fprintf(f, "Windows Vista\n");
+         fprintf(f, "Windows 7\n");
       }
-      else if (major == 5)
+      else if (IsWindowsVistaOrGreater())
       {
-         if (minor == 2)
-            fprintf(f, "Windows Server 2003\n");
-         else if (minor == 1)
-            fprintf(f, "Windows XP\n");
-         else if (minor == 0)
-            fprintf(f, "Windows 2000\n");
+         fprintf(f, "Windows Vista\n");
+      }
+      else if (IsWindowsXPOrGreater())
+      {
+         fprintf(f, "Windows XP\n");
       }
       else
-         fprintf(f, "Unknown Windows version - %lu.%lu (%lu)\n", major, minor, build);
+      {
+         fprintf(f, "Unknown Windows version\n");
+      }
    }
+
 
    void WriteProcessorInfo(FILE* f)
    {
